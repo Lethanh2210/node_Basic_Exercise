@@ -1,10 +1,10 @@
 const axios = require("axios");
 
 
-function theMostOfUser(users,prop){
+function theMostOfUser(users, prop) {
     let theMostUser = users[0];
     users.forEach((user) => {
-        if(user[prop] > theMostUser[prop]){
+        if (user[prop] > theMostUser[prop]) {
             theMostUser = user;
         }
     })
@@ -21,27 +21,28 @@ async function getApi(path) {
     }
 }
 
+async function getPostWithComment(param){
+    const [post, commentOfPost] = await Promise.all([getApi(`posts/${param}`), getApi(`posts/${param}/comments`)]);
+    post.comments = [...commentOfPost];
+    return post
+}
+
 (async () => {
-    const users = await getApi("users");
-    const posts = await getApi("posts");
-    const comments = await getApi("comments");
+    const [users, posts, comments] = await Promise.all([getApi("users"), getApi("posts"), getApi("comments")])
 
     // User with comments and posts
-    users.forEach(user => {
-        user.posts = [];
+    users.map((user) => {
+        user.posts = posts.filter(post => post.userId === user.id);
         user.comments = [];
-        posts.forEach((post) => {
-            if (post.userId === user.id) {
-                user.posts.push(post);
-            }
-        })
         comments.forEach((comment) => {
             let checkComment = user.posts.filter((post) => comment.postId === post.id);
             if (checkComment.length > 0) {
                 user.comments.push(comment)
             }
         })
+        return user;
     })
+
 
     // user with number of comments and posts
     const userWithNumberOfCommentsAndPost = users.map((user) => {
@@ -67,10 +68,8 @@ async function getApi(path) {
     });
 
 
-    //merge comments and posts
-    const [postsWithIdOne, commentOfPostIdOne] = await Promise.all([getApi("posts/1"), getApi("posts/1/comments")]);
-    postsWithIdOne.comments = [...commentOfPostIdOne];
-    console.log(postsWithIdOne);
+    //merge comments and posts id 1
+    const post = await getPostWithComment(1);
 
 
 })()
