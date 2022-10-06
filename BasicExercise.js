@@ -1,272 +1,81 @@
-const axios = require("axios")
+const axios = require("axios");
 
-const get10User = async () => {
-    try {
-        const {data:response} = await axios.get("https://jsonplaceholder.typicode.com/users");
-        return response;
-    }
 
-    catch (error) {
-        console.log(error);
-    }
-}
-const getAllPosts = async () => {
-    try {
-        const {data:response} = await axios.get("https://jsonplaceholder.typicode.com/posts");
-        return response;
-    }
-
-    catch (error) {
-        console.log(error);
-    }
+function theMostOfUser(users,prop){
+    let theMostUser = users[0];
+    users.forEach((user) => {
+        if(user[prop] > theMostUser[prop]){
+            theMostUser = user;
+        }
+    })
+    return theMostUser;
 }
 
-const getAllComments = async () => {
-    try {
-        const {data:response} = await axios.get("https://jsonplaceholder.typicode.com/comments");
-        return response;
-    }
 
-    catch (error) {
+async function getApi(path) {
+    try {
+        const {data: response} = await axios.get("https://jsonplaceholder.typicode.com/" + path);
+        return response;
+    } catch (error) {
         console.log(error);
     }
 }
 
+(async () => {
+    const users = await getApi("users");
+    const posts = await getApi("posts");
+    const comments = await getApi("comments");
 
-// user with comments and posts
-function userWithCommentsAndPosts(){
-    Promise.all([ get10User(), getAllPosts(), getAllComments(),]).then((data) => {
-        data[0].map(user =>{
-            user.posts = [];
-            user.comments = [];
-            data[1].map((post) => {
-                if(post.userId === user.id) {
-                    user.posts.push(post);
-                }
-            })
-            data[2].map((comment) => {
-                let checkComment = user.posts.filter((post) => comment.postId === post.id);
-                if(checkComment.length > 0) {
-                    user.comments.push(comment)
-                }
-            })
-        })
-        console.log(data[0])
-        return data[0];
-    })
-}
-
-// user with number of comments and posts
-function userWithNumberOfCommentsAndPosts(){
-    Promise.all([ get10User(), getAllPosts(), getAllComments(),]).then((data) => {
-        data[0].map(user =>{
-            let userPosts = [];
-            let userComments = [];
-            user.posts = 0;
-            user.comments = 0;
-            data[1].map((post) => {
-                if(post.userId === user.id) {
-                    userPosts.push(post);
-                    user.posts = userPosts.length;
-                }
-            })
-            data[2].map((comment) => {
-                let checkComment = userPosts.filter((post) => comment.postId === post.id);
-                if(checkComment.length > 0) {
-
-                    userComments.push(comment);
-                    user.comments = userComments.length;
-                }
-            })
-        })
-        console.log(data[0])
-        return data[0];
-    })
-}
-
-// filter user with more than 3 comments
-function userWithMoreThanThreeComments(){
-    Promise.all([ get10User(), getAllPosts(), getAllComments(),]).then((data) => {
-        data[0].map(user =>{
-            let userPosts = [];
-            let userComments = [];
-            user.posts = 0;
-            user.comments = 0;
-            data[1].map((post) => {
-                if(post.userId === user.id) {
-                    userPosts.push(post);
-                    user.posts = userPosts.length;
-                }
-            })
-            data[2].map((comment) => {
-                let checkComment = userPosts.filter((post) => comment.postId === post.id);
-                if(checkComment.length > 0) {
-
-                    userComments.push(comment);
-                    user.comments = userComments.length;
-                }
-            })
-        })
-        let userMoreComments = data[0].filter((user) => user.comments > 3);
-        console.log(userMoreComments)
-        return userMoreComments;
-    })
-}
-
-// Who is the user with the most comments / posts
-
-function userWithTheMostComments(){
-    Promise.all([ get10User(), getAllPosts(), getAllComments(),]).then((data) => {
-        data[0].map(user =>{
-            let userPosts = [];
-            let userComments = [];
-            user.posts = 0;
-            user.comments = 0;
-            data[1].map((post) => {
-                if(post.userId === user.id) {
-                    userPosts.push(post);
-                    user.posts = userPosts.length;
-                }
-            })
-            data[2].map((comment) => {
-                let checkComment = userPosts.filter((post) => comment.postId === post.id);
-                if(checkComment.length > 0) {
-
-                    userComments.push(comment);
-                    user.comments = userComments.length;
-                }
-            })
-        })
-        let userMostComment = data[0][0];
-
-        data[0].map(user => {
-            if(userMostComment.comments < user.comments) {
-                userMostComment = user;
+    // User with comments and posts
+    users.forEach(user => {
+        user.posts = [];
+        user.comments = [];
+        posts.forEach((post) => {
+            if (post.userId === user.id) {
+                user.posts.push(post);
             }
         })
-        console.log(userMostComment)
-        return userMostComment;
-    })
-}
-
-function userWithTheMostPosts(){
-    Promise.all([ get10User(), getAllPosts(), getAllComments(),]).then((data) => {
-        data[0].map(user =>{
-            let userPosts = [];
-            let userComments = [];
-            user.posts = 0;
-            user.comments = 0;
-            data[1].map((post) => {
-                if(post.userId === user.id) {
-                    userPosts.push(post);
-                    user.posts = userPosts.length;
-                }
-            })
-            data[2].map((comment) => {
-                let checkComment = userPosts.filter((post) => comment.postId === post.id);
-                if(checkComment.length > 0) {
-
-                    userComments.push(comment);
-                    user.comments = userComments.length;
-                }
-            })
-        })
-        let userMostPost = data[0][0];
-
-        data[0].map(user => {
-            if(userMostPost.posts < user.posts) {
-                userMostPost = user;
+        comments.forEach((comment) => {
+            let checkComment = user.posts.filter((post) => comment.postId === post.id);
+            if (checkComment.length > 0) {
+                user.comments.push(comment)
             }
         })
-        console.log(userMostPost)
-        return userMostPost;
     })
-}
 
-
-// Sort by PostCount Descending
-
-function SortByPostCountDescending(){
-    Promise.all([ get10User(), getAllPosts(), getAllComments(),]).then((data) => {
-        data[0].map(user =>{
-            let userPosts = [];
-            let userComments = [];
-            user.posts = 0;
-            user.comments = 0;
-            data[1].map((post) => {
-                if(post.userId === user.id) {
-                    userPosts.push(post);
-                    user.posts = userPosts.length;
-                }
-            })
-            data[2].map((comment) => {
-                let checkComment = userPosts.filter((post) => comment.postId === post.id);
-                if(checkComment.length > 0) {
-
-                    userComments.push(comment);
-                    user.comments = userComments.length;
-                }
-            })
-        })
-        let userMostPost = data[0][0];
-
-        data[0].map(user => {
-            if(userMostPost.posts < user.posts) {
-                userMostPost = user;
-            }
-        })
-
-        data[0].sort((a, b) => {
-            const postA = a.posts;
-            const postB = b.posts;
-           return postB - postA;
-        });
-        console.log(data[0])
-        return data[0];
+    // user with number of comments and posts
+    const userWithNumberOfCommentsAndPost = users.map((user) => {
+        user.posts = user.posts.length;
+        user.comments = user.comments.length;
+        return user;
     })
-}
+
+    // user with more than 3 comments
+    const userWithMoreThanThreeComments = userWithNumberOfCommentsAndPost.filter((user) => user.comments > 3);
+
+    // The most comments or posts user
+    //1. Comments
+    const userWithTheMostComments = theMostOfUser(users, "comments")
+    //2. Posts
+    const userWithTheMostPosts = theMostOfUser(users, "posts")
+
+    // Sort By Post-Count Descending
+    const userSortByPostCount =  users.sort((a, b) => {
+        const postA = a.posts;
+        const postB = b.posts;
+        return postB - postA;
+    });
 
 
-
-// Merge comment to post
-const getPostById = async (id) =>{
-    try {
-        const {data:response} = await axios.get(`https://jsonplaceholder.typicode.com/posts/${id}`);
-        return response;
-    }
-
-    catch (error) {
-        console.log(error);
-    }
-}
+    //merge comments and posts
+    const [postsWithIdOne, commentOfPostIdOne] = await Promise.all([getApi("posts/1"), getApi("posts/1/comments")]);
+    postsWithIdOne.comments = [...commentOfPostIdOne];
+    console.log(postsWithIdOne);
 
 
-
-const getCommentByPostId = async (id) =>{
-    try {
-        const {data:response} = await axios.get(`https://jsonplaceholder.typicode.com/posts/${id}/comments`);
-        return response;
-    }
-
-    catch (error) {
-        console.log(error);
-    }
-}
+})()
 
 
-const mergeCommentToPost = (id) => {
-    try{
-        getPostById(id).then(post => {
-            getCommentByPostId(id).then(comments => {
-                post.comments = [...comments]
-                console.log(post)
-            })
-        })
-    }
-    catch (error){
-        console.log(error);
-    }
-}
 
 
 
